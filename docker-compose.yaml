@@ -1,0 +1,45 @@
+services:
+  dagster-dagit:
+    container_name: dagster_dagit
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+    - ./dagster_app:/usr/src/app/dagster_app
+    - ./repo.py:/usr/src/app/repo.py
+    - ./workspace.yaml:/usr/src/app/workspace.yaml
+    - ./dagster.yaml:/usr/src/app/dagster.yaml
+    env_file:
+      - .env
+
+  dagster-daemon:
+    container_name: dagster_daemon
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "dagster-daemon run"
+    volumes:
+      - ./dagster_app:/usr/src/app/dagster_app
+      - ./repo.py:/usr/src/app/repo.py
+      - ./workspace.yaml:/usr/src/app/workspace.yaml
+      - ./dagster.yaml:/usr/src/app/dagster.yaml
+    env_file:
+      - .env
+
+  dagster-postgres:
+    container_name: dagster_postgres
+    image: postgres:13.3
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - dagster-postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+volumes:
+  dagster-postgres:
+    driver: local
